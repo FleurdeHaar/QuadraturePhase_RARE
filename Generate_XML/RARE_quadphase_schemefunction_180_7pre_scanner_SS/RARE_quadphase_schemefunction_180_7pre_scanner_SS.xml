@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Parameters FOVx="132" FOVy="132" FOVz="3" Name="P" GradMaxAmpl="21.4" GradSlewRate="53.5" Nx="32" Ny="32" Nz="1" TE="10">
+   <ConcatSequence Name="QPRARE">
+      <ConcatSequence Name="3Dloop">
+         <ATOMICSEQUENCE Name="RFPprep0">
+                <SINCRFPULSE Apodization="0.5" Bandwidth="8" FlipAngle="90" InitialDelay="RUT" InitialPhase="0" Name="P1" Zeros="4" Observe="RUT=SS.RampUpTime"/>
+                <TRAPGRADPULSE Axis="GZ" FlatTopArea="2*Pi/FOVz" FlatTopTime="D" Name="SS" Observe="D=P1.Duration, FOVz=P.FOVz"/>
+         </ATOMICSEQUENCE>
+         <ATOMICSEQUENCE Name="SSrep">
+                <TRAPGRADPULSE Area="-A/2" Axis="GZ" Name="rep" Observe="A=SS.Area"/>
+         </ATOMICSEQUENCE>
+         <ATOMICSEQUENCE Name="GYBLIB">
+                <TRAPGRADPULSE Area="DKy/2" Axis="GX" Name="PBLIB" Observe="DKy=P.DKy"/>
+         </ATOMICSEQUENCE>
+         <ATOMICSEQUENCE Name="BLIBZERO">
+                <HARDRFPULSE Axis="RF" Duration="0.1" FlipAngle="0" Name="PBLIBRF"/>
+         </ATOMICSEQUENCE>
+         <ATOMICSEQUENCE Name="ROpreb">
+                <TRAPGRADPULSE Area="A/2" Axis="GX" Name="ROpre" Observe="A=ROimg4.Area"/>
+         </ATOMICSEQUENCE>
+         <DELAYATOMICSEQUENCE Delay="TE/2" DelayType="B2E" Name="D1" Observe="TE=P.TE" StartSeq="RFPprep0"/>
+         <ConcatSequence Name="PREP1">
+            <ATOMICSEQUENCE Name="RFprep11">
+               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="RUT" Name="Crush11" Observe="Dz=P.Dz, RUT=SS21.RampUpTime"/>
+               <SINCRFPULSE Apodization="0.5" Bandwidth="8" FlipAngle="180" InitialPhase="101.9387755" InitialDelay="CR1" Name="PprepRF1" Refocusing="1" Observe="CR1=Crush11.Duration, DZ=P.Dz" Zeros="4"/>
+               <TRAPGRADPULSE Axis="GZ" FlatTopArea="2*Pi/FOVz" FlatTopTime="D" Name="SS21" Observe="D=PprepRF1.Duration,FOVz=P.FOVz"/>
+               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="FTT+CR1" Name="Crush21" Observe="Dz=P.Dz, CR1=Crush11.Duration,FTT=SS21.EndOfFlatTop"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AprepPE1">
+               <TRAPGRADPULSE Axis="GY" Name="PEprep1" Observe="KMy=P.KMAXy, DKy=P.DKy, Ny=P.Ny"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AprepRO1">
+               <TRAPGRADPULSE ADCFlag="0" Axis="GX" InitialPhase="203.877551" Name="ROprep1" FlatTopArea="2*KMx" FlatTopTime="20" Observe="KMx=P.KMAXx, Nx=P.Nx, TE=P.TE"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AprepREPH1">
+               <TRAPGRADPULSE Axis="GY" Name="REPHprep1" Observe="A=PEprep1.Area"/>
+            </ATOMICSEQUENCE>
+            <DELAYATOMICSEQUENCE Delay="TE" DelayType="B2E" Name="D1" Observe="TE=P.TE" StartSeq="RFPprep1"/>
+         </ConcatSequence>
+         <ConcatSequence Name="PREP2">
+            <ATOMICSEQUENCE Name="RFprep12">
+               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="RUT" Name="Crush12" Observe="Dz=P.Dz, RUT=SS22.RampUpTime"/>
+               <SINCRFPULSE Apodization="0.5" Bandwidth="8" FlipAngle="180" InitialPhase="-61.53061224" InitialDelay="CR1" Name="PprepRF2" Refocusing="1" Observe="CR1=Crush12.Duration, DZ=P.Dz" Zeros="4"/>
+               <TRAPGRADPULSE Axis="GZ" FlatTopArea="2*Pi/FOVz" FlatTopTime="D" Name="SS22" Observe="D=PprepRF2.Duration,FOVz=P.FOVz"/>
+               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="FTT+CR1" Name="Crush22" Observe="Dz=P.Dz, CR1=Crush12.Duration,FTT=SS22.EndOfFlatTop"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AprepPE2">
+               <TRAPGRADPULSE Axis="GY" Name="PEprep2" Observe="KMy=P.KMAXy, DKy=P.DKy, Ny=P.Ny"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AprepRO2">
+               <TRAPGRADPULSE ADCFlag="0" Axis="GX" InitialPhase="-326.9387755" Name="ROprep2" FlatTopArea="2*KMx" FlatTopTime="20" Observe="KMx=P.KMAXx, Nx=P.Nx, TE=P.TE"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AprepREPH2">
+               <TRAPGRADPULSE Axis="GY" Name="REPHprep2" Observe="A=PEprep2.Area"/>
+            </ATOMICSEQUENCE>
+            <DELAYATOMICSEQUENCE Delay="TE" DelayType="B2E" Name="D2" Observe="TE=P.TE" StartSeq="RFPprep2"/>
+         </ConcatSequence>
+         <ConcatSequence Name="PREP3">
+            <ATOMICSEQUENCE Name="RFprep13">
+               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="RUT" Name="Crush13" Observe="Dz=P.Dz, RUT=SS23.RampUpTime"/>
+               <SINCRFPULSE Apodization="0.5" Bandwidth="8" FlipAngle="180" InitialPhase="-78.06122449" InitialDelay="CR1" Name="PprepRF3" Refocusing="1" Observe="CR1=Crush13.Duration, DZ=P.Dz" Zeros="4"/>
+               <TRAPGRADPULSE Axis="GZ" FlatTopArea="2*Pi/FOVz" FlatTopTime="D" Name="SS23" Observe="D=PprepRF3.Duration,FOVz=P.FOVz"/>
+               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="FTT+CR1" Name="Crush23" Observe="Dz=P.Dz, CR1=Crush13.Duration,FTT=SS23.EndOfFlatTop"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AprepPE3">
+               <TRAPGRADPULSE Axis="GY" Name="PEprep3" Observe="KMy=P.KMAXy, DKy=P.DKy, Ny=P.Ny"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AprepRO3">
+               <TRAPGRADPULSE ADCFlag="0" Axis="GX" InitialPhase="170.8163265" Name="ROprep3" FlatTopArea="2*KMx" FlatTopTime="20" Observe="KMx=P.KMAXx, Nx=P.Nx, TE=P.TE"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AprepREPH3">
+               <TRAPGRADPULSE Axis="GY" Name="REPHprep3" Observe="A=PEprep3.Area"/>
+            </ATOMICSEQUENCE>
+            <DELAYATOMICSEQUENCE Delay="TE" DelayType="B2E" Name="D3" Observe="TE=P.TE" StartSeq="RFPprep3"/>
+         </ConcatSequence>
+         <ConcatSequence Name="ECHO4">
+         <ATOMICSEQUENCE Name="RFimg4">
+            <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="RUT" Name="Crush1img4" Observe="Dz=P.Dz, RUT=SSimg4.RampUpTime"/>
+            <SINCRFPULSE Apodization="0.5" Bandwidth="8" FlipAngle="180" InitialDelay="CR1" InitialPhase="4" Name="PimgRF3.912245e+02" Refocusing="1" Zeros="4" Observe="CR1=Crush1img4.Duration, DZ=P.Dz"/>
+            <TRAPGRADPULSE Axis="GZ" FlatTopArea="2*Pi/FOVz" FlatTopTime="D" InitialDelay="CR1" Name="SSimg4" Observe="D=PimgRF4.Duration, FOVz=P.FOVz, CR1=Crush1img4.Duration"/>
+            <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="FTT+CR1" Name="Crush2img4" Observe="Dz=P.Dz, CR1=Crush1img4.Duration, FTT=SSimg4.EndOfFlatTop"/>
+         </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AimgPE4">
+               <TRAPGRADPULSE Area="(-KMy + DKy*1)" Axis="GY" Name="PEimg4" Observe="KMy=P.KMAXy, DKy=P.DKy, Ny=P.Ny"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AimgRO4">
+               <TRAPGRADPULSE ADCFlag="2" ADCs="32" Axis="GX" FlatTopArea="2*KMx" FlatTopTime="20" InitialPhase="611.6326531" Name="ROimg4" Observe="KMx=P.KMAXx, Nx=P.Nx"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AimgREPH4">
+               <TRAPGRADPULSE Area="-A" Axis="GY" Name="REPHimg4" Observe="A=PEimg4.Area"/>
+            </ATOMICSEQUENCE>
+            <DELAYATOMICSEQUENCE Delay="TE" DelayType="B2E" Name="D4E" Observe="TE=P.TE" StartSeq="RFPimg4"/>
+         </ConcatSequence>
+         <ConcatSequence Name="ECHO5">
+         <ATOMICSEQUENCE Name="RFimg5">
+            <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="RUT" Name="Crush1img5" Observe="Dz=P.Dz, RUT=SSimg5.RampUpTime"/>
+            <SINCRFPULSE Apodization="0.5" Bandwidth="8" FlipAngle="180" InitialDelay="CR1" InitialPhase="5" Name="PimgRF9.055102e+02" Refocusing="1" Zeros="4" Observe="CR1=Crush1img5.Duration, DZ=P.Dz"/>
+            <TRAPGRADPULSE Axis="GZ" FlatTopArea="2*Pi/FOVz" FlatTopTime="D" InitialDelay="CR1" Name="SSimg5" Observe="D=PimgRF5.Duration, FOVz=P.FOVz, CR1=Crush1img5.Duration"/>
+            <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="FTT+CR1" Name="Crush2img5" Observe="Dz=P.Dz, CR1=Crush1img5.Duration, FTT=SSimg5.EndOfFlatTop"/>
+         </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AimgPE5">
+               <TRAPGRADPULSE Area="(-KMy + DKy*1)" Axis="GY" Name="PEimg5" Observe="KMy=P.KMAXy, DKy=P.DKy, Ny=P.Ny"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AimgRO5">
+               <TRAPGRADPULSE ADCFlag="2" ADCs="32" Axis="GX" FlatTopArea="2*KMx" FlatTopTime="20" InitialPhase="1199.387755" Name="ROimg5" Observe="KMx=P.KMAXx, Nx=P.Nx"/>
+            </ATOMICSEQUENCE>
+            <ATOMICSEQUENCE Name="AimgREPH5">
+               <TRAPGRADPULSE Area="-A" Axis="GY" Name="REPHimg5" Observe="A=PEimg5.Area"/>
+            </ATOMICSEQUENCE>
+            <DELAYATOMICSEQUENCE Delay="TE" DelayType="B2E" Name="D5E" Observe="TE=P.TE" StartSeq="RFPimg5"/>
+         </ConcatSequence>
+      </ConcatSequence>
+   </ConcatSequence>
+</Parameters>
