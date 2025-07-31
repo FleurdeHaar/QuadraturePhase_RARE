@@ -36,7 +36,8 @@ function [magnitude_image , data] = reconstruct_magnitude_image_POCS(file, plots
     Ny_half = Ny_total / 2;
     S1_line = zeros(Nx, Ny_half);
     S2_line = zeros(Nx, Ny_half);
-
+    
+    % Summing of signals is done in image space 
     for i = 1:Ny_half
         Sn  = k(:, 2*i - 1);
         Sn1 = k(:, 2*i);
