@@ -168,7 +168,8 @@ for i = 1:n_prep
     fprintf(fid, '            </ATOMICSEQUENCE>\n');
 
     % Delay for echo spacing
-    fprintf(fid, '            <DELAYATOMICSEQUENCE Delay="TE/2" DelayType="C2C" Name="D3%d" Observe="TE=P.TE, StartSeq="RFprep_ref%d", StopSeq="AprepRO%d"/>\n' ,i,i,i);
+     % Delay of TE, minus the crusher duration
+    fprintf(fid, '            <DELAYATOMICSEQUENCE Delay="TE/2" DelayType="C2C" Name="D3%d" Observe="TE=P.TE, StartSeq="RFprep_ref%d, StopSeq="/>\n' i,i,i,i);
    
     fprintf(fid, '            <ATOMICSEQUENCE Name="AprepRO%d">\n', i);
     fprintf(fid, '               <TRAPGRADPULSE ADCFlag="0" Axis="GX" InitialPhase="%.10g" Name="ROprep%d" FlatTopArea="2*KMx" FlatTopTime="DWELL*Nx" Observe="KMx=P.KMAXx, Nx=P.Nx, DWELL=P.TD"/>\n', ...
@@ -219,9 +220,7 @@ for pe = 1:((Ny/2)+((n_img-Ny)/2))
         fprintf(fid, '               <TRAPGRADPULSE Area="(-KMy + DKy*%d)" Axis="GY" Name="PEimg%d" Observe="KMy=P.KMAXy, DKy=P.DKy, Ny=P.Ny"/>\n', ...
             (pe), i);
         fprintf(fid, '            </ATOMICSEQUENCE>\n');
-        
-        % Delay for echo spacing
-            fprintf(fid, '            <DELAYATOMICSEQUENCE Delay="TE/2" DelayType="C2C" Name="D3%d" Observe="TE=P.TE, StartSeq="RFimg_ref%d", StopSeq="AimgRO%d"/>\n' ,i,i,i);
+
         % RO-gradient & ADC
         fprintf(fid, '            <ATOMICSEQUENCE Name="AimgRO%d">\n', i);
         fprintf(fid, '               <TRAPGRADPULSE ADCFlag="2" ADCs="%d" Axis="GX" FlatTopArea="2*KMx" FlatTopTime="DWELL*Nx" InitialPhase="%.10g" Name="ROimg%d" Observe="KMx=P.KMAXx, Nx=P.Nx, DWELL=P.TD"/>\n', ...
@@ -234,7 +233,7 @@ for pe = 1:((Ny/2)+((n_img-Ny)/2))
         fprintf(fid, '            </ATOMICSEQUENCE>\n');
 
         % Delay of TE, minus the crusher duration
-        fprintf(fid, '            <DELAYATOMICSEQUENCE Delay="TE-D1-D2" DelayType="B2E" Name="D3%d" Observe="TE=P.TE, D1=Crush1img%d.RampUpTime, D2=Crush1img%d.EndOfFlatTop" StartSeq="RFimg_ref%d"/>\n', i, i,i,i);
+        fprintf(fid, '            <DELAYATOMICSEQUENCE Delay="TE-D1-D2" DelayType="B2E" Name="D3%d" Observe="TE=P.TE, D1=Crush1img%d.RampUpTime, D2=Crush1img%d.EndOfFlatTop" StartSeq="RFimg%d"/>\n', i, i,i,i);
         
         fprintf(fid, '         </ConcatSequence>\n');
         echo_nr = echo_nr + 1;
