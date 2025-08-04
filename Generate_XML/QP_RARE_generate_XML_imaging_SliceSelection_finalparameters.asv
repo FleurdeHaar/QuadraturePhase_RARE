@@ -15,9 +15,7 @@ close all
 % Set name for saving XML file for sequence 
 name = 'RARE_quadphase_schemefunction_180_7pre_scanner.xml' ;
 
-% Imaging echoes (for example. 36), two overscan lines, now Partial K space
-% sampled
-n_img = 18*2; 
+
 
 %% Sequence-level parameters 
 FOVx          = 132;      % mm
@@ -31,7 +29,11 @@ Nz            =   1;      % Grid size parameter Z
 TE            =  6.5;      % Echo time in ms
 TD            =  0.01;    % Dwell Time in ms
 
-
+% Imaging echoes (for example. 36), two overscan lines, now Partial K space
+% sampled
+%n_img = 18*2; 
+% Or full k space sampling
+n_img = Nx*2;
 %% Set Difussion weighted simulation parameters
 % Set this to true if you want to add a blib to show diffusion effects
 blib = false;  
@@ -40,7 +42,7 @@ axis_phase_var = "GX"; % Axis over which phase variation is added
 excitation_initialphase = 0; % Set initial phase of 90 pulse (phase offset)
 
 %% Quadrature phase scheme
-n_prep = 7;   % Prepulses (3 of 7)
+n_prep = 3;   % Prepulses (3 of 7)
 
 % Calculate echo train length
 etl = n_prep + n_img;
@@ -145,7 +147,7 @@ for i = 1:n_prep
 
     % Crusher 1
     fprintf(fid, '            <ATOMICSEQUENCE Name="RFprep_c%d">\n', i);
-    fprintf(fid, '               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" Name="Crush1%d" Observe="Dz=P.Dz"/>\n', i, i);
+    fprintf(fid, '               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" Name="Crush1%d" Observe="Dz=P.Dz"/>\n', i);
     fprintf(fid, '            </ATOMICSEQUENCE>\n');
 
     % Refocus sinc pulse 
@@ -165,7 +167,7 @@ for i = 1:n_prep
     fprintf(fid, '               <TRAPGRADPULSE Axis="GY" Name="PEprep%d" Observe="KMy=P.KMAXy, DKy=P.DKy, Ny=P.Ny"/>\n', i);
     fprintf(fid, '            </ATOMICSEQUENCE>\n');
     fprintf(fid, '            <ATOMICSEQUENCE Name="AprepRO%d">\n', i);
-    fprintf(fid, '               <TRAPGRADPULSE ADCFlag="0" Axis="GX" InitialPhase="%.10g" Name="ROprep%d" FlatTopArea="2*KMx" FlatTopTime="3" Observe="KMx=P.KMAXx"/>\n', ...
+    fprintf(fid, '               <TRAPGRADPULSE ADCFlag="0" Axis="GX" InitialPhase="%.10g" Name="ROprep%d" FlatTopArea="2*KMx" FlatTopTime="DWELL*NX" Observe="KMx=P.KMAXx, NX=P.Nx, DWELL=P.TD"/>\n', ...
         R_deg(i), i);
     fprintf(fid, '            </ATOMICSEQUENCE>\n');
     fprintf(fid, '            <ATOMICSEQUENCE Name="AprepREPH%d">\n', i);
@@ -192,33 +194,20 @@ for pe = 1:((Ny/2)+((n_img-Ny)/2))
         
         % refocussing pulse + slice selection + crushers 
         % Crusher 1 
-        fprintf(fid, '         <ATOMICSEQUENCE Name="RFimg_c%d">\n', i);
-        fprintf(fid, '               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" Name="Crush1img%d" Observe="Dz=P.Dz"/>\n', i, i);
+        fprintf(fid, '         <ATOMICSEQUENCE Name="RFimg_c_%d">\n', i);
+        fprintf(fid, '               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" Name="Crush1img%d" Observe="Dz=P.Dz"/>\n', i);
         fprintf(fid, '            </ATOMICSEQUENCE>\n');
 
         % Refocus and sinc pulse
-        fprintf(fid, '            <ATOMICSEQUENCE Name="RFimg_ref%d">\n', i);
-
-
+        fprintf(fid, '          <ATOMICSEQUENCE Name="RFimg_ref%d">\n', i);
         fprintf(fid, '            <SINCRFPULSE Apodization="0.5" Bandwidth="4" FlipAngle="%.10g" InitialDelay="RUT" InitialPhase="%.10g" Name="PimgRF%d" Refocusing="1" Zeros="4" Observe="RUT=SSimg%d.RampUpTime"/>\n', flip_angle, rf_phase,i, i);
-        fprintf(fid, '            <TRAPGRADPULSE Axis="GZ" FlatTopArea="2*Pi/FOVz" FlatTopTime="D" InitialDelay="CR1" Name="SSimg%d" Observe="D=PimgRF%d.Duration, FOVz=P.FOVz, CR1=Crush1img%d.Duration"/>\n', i, i, i);
-        fprintf(fid, '            <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="FTT+CR1" Name="Crush2img%d" Observe="Dz=P.Dz, CR1=Crush1img%d.Duration, FTT=SSimg%d.EndOfFlatTop"/>\n', i, i, i);
-        fprintf(fid, '         </ATOMICSEQUENCE>\n');
+        fprintf(fid, '            <TRAPGRADPULSE Axis="GZ" FlatTopArea="2*Pi/FOVz" FlatTopTime="D" Name="SSimg%d" Observe="D=PimgRF%d.Duration, FOVz=P.FOVz"/>\n', i, i);
+        fprintf(fid, '          </ATOMICSEQUENCE>\n'); 
 
-
-
-    % Refocus sinc pulse 
-    fprintf(fid, '            <ATOMICSEQUENCE Name="RFprep_ref%d">\n', i);
-    % Slice selection
-    fprintf(fid, '               <TRAPGRADPULSE Axis="GZ" FlatTopArea="2*Pi/FOVz" FlatTopTime="D" Name="SS2%d" Observe="D=PprepRF%d.Duration, FOVz=P.FOVz"/>\n', i, i);        
-    fprintf(fid, '               <SINCRFPULSE Apodization="0.5" Bandwidth="4" FlipAngle="%.10g" InitialPhase="%.10g" InitialDelay="RUT" Name="PprepRF%d" Refocusing="1" Observe="RUT=SS2%d.RampUpTime" Zeros="4"/>\n',  lips_v(i), E_deg(i), i, i);
-    fprintf(fid, '            </ATOMICSEQUENCE>\n'); 
-    
-    % Crusher 2 
-    fprintf(fid, '            <ATOMICSEQUENCE Name="RFprep_c2%d">\n', i);
-    fprintf(fid, '               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" Name="Crush2%d" Observe="Dz=P.Dz"/>\n', i);
-    fprintf(fid, '            </ATOMICSEQUENCE>\n');
-
+        % Crusher 2 
+        fprintf(fid, '          <ATOMICSEQUENCE Name="RFimg_c2_%d">\n', i);
+        fprintf(fid, '            <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" Name="Crush2img%d" Observe="Dz=P.Dz"/>\n', i);
+        fprintf(fid, '          </ATOMICSEQUENCE>\n');
 
 
         % PE-gradient: Area="(-KMy + DKy * (pe))"
@@ -229,7 +218,7 @@ for pe = 1:((Ny/2)+((n_img-Ny)/2))
 
         % RO-gradient & ADC
         fprintf(fid, '            <ATOMICSEQUENCE Name="AimgRO%d">\n', i);
-        fprintf(fid, '               <TRAPGRADPULSE ADCFlag="2" ADCs="%d" Axis="GX" FlatTopArea="2*KMx" FlatTopTime="3" InitialPhase="%.10g" Name="ROimg%d" Observe="KMx=P.KMAXx, Nx=P.Nx"/>\n', ...
+        fprintf(fid, '               <TRAPGRADPULSE ADCFlag="2" ADCs="%d" Axis="GX" FlatTopArea="2*KMx" FlatTopTime="Dwe" InitialPhase="%.10g" Name="ROimg%d" Observe="KMx=P.KMAXx, Nx=P.Nx"/>\n', ...
             Nx, adc_phase, i);
         fprintf(fid, '            </ATOMICSEQUENCE>\n');
 
@@ -239,7 +228,7 @@ for pe = 1:((Ny/2)+((n_img-Ny)/2))
         fprintf(fid, '            </ATOMICSEQUENCE>\n');
 
         % Delay of TE, minus the crusher duration
-        fprintf(fid, '            <DELAYATOMICSEQUENCE Delay="TE-CR1" DelayType="B2E" Name="D3%d" Observe="TE=P.TE, CR1=Crush1img%d.Duration" StartSeq="RFimg%d"/>\n', i, i,i);
+        fprintf(fid, '            <DELAYATOMICSEQUENCE Delay="TE-D1-D2" DelayType="B2E" Name="D3%d" Observe="TE=P.TE, D1=Crush1img%d.RampUpTime, D2=Crush1img%d.EndOfFlatTop" StartSeq="RFimg%d"/>\n', i, i,i,i);
         
         fprintf(fid, '         </ConcatSequence>\n');
         echo_nr = echo_nr + 1;

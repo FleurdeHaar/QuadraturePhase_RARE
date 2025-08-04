@@ -167,7 +167,7 @@ for i = 1:n_prep
     fprintf(fid, '               <TRAPGRADPULSE Axis="GY" Name="PEprep%d" Observe="KMy=P.KMAXy, DKy=P.DKy, Ny=P.Ny"/>\n', i);
     fprintf(fid, '            </ATOMICSEQUENCE>\n');
     fprintf(fid, '            <ATOMICSEQUENCE Name="AprepRO%d">\n', i);
-    fprintf(fid, '               <TRAPGRADPULSE ADCFlag="0" Axis="GX" InitialPhase="%.10g" Name="ROprep%d" FlatTopArea="2*KMx" FlatTopTime="3" Observe="KMx=P.KMAXx"/>\n', ...
+    fprintf(fid, '               <TRAPGRADPULSE ADCFlag="0" Axis="GX" InitialPhase="%.10g" Name="ROprep%d" FlatTopArea="2*KMx" FlatTopTime="DWELL*Nx" Observe="KMx=P.KMAXx, Nx=P.Nx, DWELL=P.TD"/>\n', ...
         R_deg(i), i);
     fprintf(fid, '            </ATOMICSEQUENCE>\n');
     fprintf(fid, '            <ATOMICSEQUENCE Name="AprepREPH%d">\n', i);
@@ -218,7 +218,7 @@ for pe = 1:((Ny/2)+((n_img-Ny)/2))
 
         % RO-gradient & ADC
         fprintf(fid, '            <ATOMICSEQUENCE Name="AimgRO%d">\n', i);
-        fprintf(fid, '               <TRAPGRADPULSE ADCFlag="2" ADCs="%d" Axis="GX" FlatTopArea="2*KMx" FlatTopTime="3" InitialPhase="%.10g" Name="ROimg%d" Observe="KMx=P.KMAXx, Nx=P.Nx"/>\n', ...
+        fprintf(fid, '               <TRAPGRADPULSE ADCFlag="2" ADCs="%d" Axis="GX" FlatTopArea="2*KMx" FlatTopTime="DWELL*Nx" InitialPhase="%.10g" Name="ROimg%d" Observe="KMx=P.KMAXx, Nx=P.Nx, DWELL=P.TD"/>\n', ...
             Nx, adc_phase, i);
         fprintf(fid, '            </ATOMICSEQUENCE>\n');
 
