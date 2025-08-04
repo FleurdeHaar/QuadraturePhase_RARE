@@ -28,7 +28,8 @@ GradSlewRate  = 53.50;    % rad/mm/ms^2 (=200 T/m/s) --> Hardware limitation
 Nx            =  32;      % Grid size parameter X
 Ny            =  32;      % Grid size parameter Y
 Nz            =   1;      % Grid size parameter Z
-TE            =  10;      % Echo time in ms
+TE            =  6.5;      % Echo time in ms
+TD            =  0.01;    % Dwell Time in ms
 
 
 %% Set Difussion weighted simulation parameters
@@ -89,14 +90,14 @@ fmt = [ ...
   '<Parameters ' ...
     'FOVx="%g" FOVy="%g" FOVz="%g" Name="P" ' ...
     'GradMaxAmpl="%g" GradSlewRate="%g" '   ...
-    'Nx="%d" Ny="%d" Nz="%d" TE="%g">'     ...
+    'Nx="%d" Ny="%d" Nz="%d" TE="%g" TD="%g">'     ...
   '\n'                                  ...
 ];
 
 fprintf(fid, fmt, ...
         FOVx, FOVy, FOVz, ...
         GradMaxAmpl, GradSlewRate, ...
-        Nx, Ny, Nz, TE);
+        Nx, Ny, Nz, TE, TD);
 
 fprintf(fid, '   <ConcatSequence Name="QPRARE">\n');
 fprintf(fid, '      <ConcatSequence Name="3Dloop">\n');
@@ -106,7 +107,7 @@ fprintf(fid, '      <ConcatSequence Name="3Dloop">\n');
 fprintf(fid, '         <ATOMICSEQUENCE Name="RFPprep0">\n');
 
 % Sinc excitation pulse
-fprintf(fid, '                <SINCRFPULSE Apodization="0.5" Bandwidth="8" FlipAngle="90" InitialDelay="RUT" InitialPhase="%.10g" Name="P1" Zeros="4" Observe="RUT=SS.RampUpTime"/>\n', excitation_initialphase);
+fprintf(fid, '                <SINCRFPULSE Apodization="0.5" Bandwidth="4" FlipAngle="90" InitialDelay="RUT" InitialPhase="%.10g" Name="P1" Zeros="4" Observe="RUT=SS.RampUpTime"/>\n', excitation_initialphase);
 % Slice selection
 fprintf(fid, '                <TRAPGRADPULSE Axis="GZ" FlatTopArea="2*Pi/FOVz" FlatTopTime="D" Name="SS" Observe="D=P1.Duration, FOVz=P.FOVz"/>\n');
 fprintf(fid, '         </ATOMICSEQUENCE>\n');
@@ -144,7 +145,7 @@ for i = 1:n_prep
     % Crusher 1
     fprintf(fid, '               <TRAPGRADPULSE Area="2*Pi/(Dz/2)" Axis="GZ" InitialDelay="RUT" Name="Crush1%d" Observe="Dz=P.Dz, RUT=SS2%d.RampUpTime"/>\n', i, i);
     % Refocus sinc pulse 
-    fprintf(fid, '               <SINCRFPULSE Apodization="0.5" Bandwidth="8" FlipAngle="%.10g" InitialPhase="%.10g" InitialDelay="CR1" Name="PprepRF%d" Refocusing="1" Observe="CR1=Crush1%d.Duration" Zeros="4"/>\n',  lips_v(i), E_deg(i), i, i);
+    fprintf(fid, '               <SINCRFPULSE Apodization="0.5" Bandwidth="4" FlipAngle="%.10g" InitialPhase="%.10g" InitialDelay="CR1" Name="PprepRF%d" Refocusing="1" Observe="CR1=Crush1%d.Duration" Zeros="4"/>\n',  lips_v(i), E_deg(i), i, i);
     % Slice selection
     fprintf(fid, '               <TRAPGRADPULSE Axis="GZ" FlatTopArea="2*Pi/FOVz" InitialDelay="CR1" FlatTopTime="D" Name="SS2%d" Observe="D=PprepRF%d.Duration,FOVz=P.FOVz,CR1=Crush1%d.Duration"/>\n', i, i,i);        
     % Crusher 2 
@@ -231,6 +232,7 @@ fprintf('Field of View: [FOVx, FOVy, FOVz] = [%g, %g, %g] mm\n', FOVx, FOVy, FOV
 fprintf('Hardware Limits: GradMaxAmpl=%g rad/mm/ms, GradSlewRate=%g rad/mm/ms^2\n', GradMaxAmpl, GradSlewRate);
 fprintf('Grid size: [Nx, Ny, Nz] = [%d, %d, %d]\n', Nx, Ny, Nz);
 fprintf('Echo Time TE: %g ms\n', TE);
+fprintf('Dwell Time TD: %g ms\n', TD);
 fprintf('Diffusion block (blib): %d (phase_variation=%d, axis=%s)\n', blib, phase_variation, axis_phase_var);
 fprintf('Initial excitation phase: %g rad\n', excitation_initialphase);
 fprintf('Flip angle scheme: constant_flipangle=%g, use_variable_flip=%d\n', constant_flipangle, use_variable_flip);
