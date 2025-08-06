@@ -1,7 +1,7 @@
 % === EPG vs JEMRIS signal comparison ===
 
-clear all
-close all
+% clear all
+% close all
 
 %% Settings
 % NOTE: In JEMRIS these values are in ms
@@ -12,7 +12,7 @@ prepulses = 7; % Number of prepulses (e.g., 3 or 7)
 imaging_pulses = 90;
 etl = prepulses + imaging_pulses; % total pulses
 blip = false; % Use blip true or false 
-Phi0 = 0;
+Phi0 = 0.393;
 Phi90 = pi/2;
 
 flip_const_deg = 140; % or whatever constant angle you want

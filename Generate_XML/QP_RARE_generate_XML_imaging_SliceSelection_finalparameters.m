@@ -26,7 +26,7 @@ GradSlewRate  = 53.50;    % rad/mm/ms^2 (=200 T/m/s) --> Hardware limitation
 Nx            =  32;      % Grid size parameter X
 Ny            =  32;      % Grid size parameter Y
 Nz            =   1;      % Grid size parameter Z
-TE            =  6.5;      % Echo time in ms
+TE            =  7 ;      % Echo time in ms
 TD            =  0.01;    % Dwell Time in ms
 
 % Imaging echoes (for example. 36), two overscan lines, now Partial K space
@@ -168,7 +168,7 @@ for i = 1:n_prep
     fprintf(fid, '            </ATOMICSEQUENCE>\n');
 
     % Delay for echo spacing
-    fprintf(fid, '            <DELAYATOMICSEQUENCE Delay="TE/2" DelayType="C2C" Name="D3%d" Observe="TE=P.TE, StartSeq="RFprep_ref%d", StopSeq="AprepRO%d"/>\n' ,i,i,i);
+    fprintf(fid, '            <DELAYATOMICSEQUENCE Delay="TE/2" DelayType="C2C" Name="D3_prep%d" Observe="TE=P.TE" StartSeq="RFprep_ref%d" StopSeq="AprepRO%d"/>\n' ,i,i,i);
    
     fprintf(fid, '            <ATOMICSEQUENCE Name="AprepRO%d">\n', i);
     fprintf(fid, '               <TRAPGRADPULSE ADCFlag="0" Axis="GX" InitialPhase="%.10g" Name="ROprep%d" FlatTopArea="2*KMx" FlatTopTime="DWELL*Nx" Observe="KMx=P.KMAXx, Nx=P.Nx, DWELL=P.TD"/>\n', ...
@@ -221,7 +221,7 @@ for pe = 1:((Ny/2)+((n_img-Ny)/2))
         fprintf(fid, '            </ATOMICSEQUENCE>\n');
         
         % Delay for echo spacing
-            fprintf(fid, '            <DELAYATOMICSEQUENCE Delay="TE/2" DelayType="C2C" Name="D3%d" Observe="TE=P.TE, StartSeq="RFimg_ref%d", StopSeq="AimgRO%d"/>\n' ,i,i,i);
+        fprintf(fid, '            <DELAYATOMICSEQUENCE Delay="TE/2" DelayType="C2C" Name="D3_im%d" Observe="TE=P.TE" StartSeq="RFimg_ref%d" StopSeq="AimgRO%d"/>\n' ,i,i,i);
         % RO-gradient & ADC
         fprintf(fid, '            <ATOMICSEQUENCE Name="AimgRO%d">\n', i);
         fprintf(fid, '               <TRAPGRADPULSE ADCFlag="2" ADCs="%d" Axis="GX" FlatTopArea="2*KMx" FlatTopTime="DWELL*Nx" InitialPhase="%.10g" Name="ROimg%d" Observe="KMx=P.KMAXx, Nx=P.Nx, DWELL=P.TD"/>\n', ...
