@@ -145,11 +145,13 @@ function [magnitude_image , data] = reconstruct_magnitude_image_POCS(file, plots
     m_y = images{2};
     
     
+    
+   
+    in_phase = abs(m_x); % In phase image, real part
+    out_phase = abs(m_y); % Out of phase image, real part 
+    %magnitude_image = in_phase+i*out_phase;
     % Combine the in and out of phase image by SOS
     magnitude_image = sqrt(abs(m_x).^2 + abs(m_y).^2);
-
-    in_phase = imag(m_x); % In phase image, real part
-    out_phase = imag(m_y); % Out of phase image, real part 
 
     %% Step 5: Plot combined results
     if plotstate
