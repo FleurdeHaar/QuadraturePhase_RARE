@@ -1,79 +1,106 @@
 %% compare_quad_POCS_vs_golden.m
-% Vergelijk meerdere QP-RARE POCS-reconstructies met één 'gouden standaard' RARE-image
+% Compare multiple QP-RARE POCS reconstructions and a standard RARE reconstruction (with blip)
+% to a 'golden standard' RARE image (fully sampled, no blip).
+% This script evaluates reconstruction performance by calculating MAE, MSE, and background leakage.
+% Author: Fleur De Haar, 2025
 
 clear all; close all;
 
-%% Bestanden
-% Cell-array met je quadrature-RARE datasets
+%% Files
+% List with your QP-RARE datasets (to be reconstructed with POCS)
 quad_files = { ...
-    'QP_RARE_180train_3prepuls.mat', ...
-    'QP_RARE_160train_3prepuls_lowerdens.mat', ...
-    'QP_RARE_160train_3prepuls.mat',  ...
-    'QP_RARE_160train_3prepuls_blib.mat'...
+    'QP_RARE_180train_7prepuls_blib.mat', ...
+    'QP_RARE_VF_7prepuls_blib.mat',  ...
 };
 
-% Gouden standaard RARE-bestand
+% Standard RARE with blip (to be reconstructed with its own normal method)
+rare_blib_file = 'RARE_normal_blibx.mat';
+
+% Golden standard (fully sampled standard RARE)
 ref_file = 'RARE_normal.mat';
 
 %% Parameters
-Nx = 32;    % matrixgrootte in x
+Nx = 32;    % Image matrix size in x-direction
 
-%% Laad en reconstrueer referentiebeeld
-ref_data = load(ref_file);
-Mx_ref     = ref_data.M(:,1);
-My_ref     = ref_data.M(:,2);
-I_ref      = complex(Mx_ref, My_ref);
-Ny_ref     = length(I_ref)/Nx;
-k_ref      = reshape(I_ref, [Nx, Ny_ref]);
-ref_image  = abs(ifftshift(ifft2(ifftshift(k_ref))));
+%% Load and reconstruct the reference image
+ref_image = reconstruct_magnitude_image_standard(ref_file, Nx);
 
-%% Voorbereiding resultaat-tabel
-nQ = numel(quad_files);
-results = table('Size',[nQ 5], ...
+%% Prepare results table: 2 QP-RARE + 1 RARE_blib
+all_files = [quad_files, {rare_blib_file}];
+nF = numel(all_files);
+results = table('Size',[nF 5], ...
     'VariableTypes', {'string','double','double','double','double'}, ...
-    'VariableNames', {'File','MAE_POCS','MSE_POCS','Leakage_POCS','BetterThanThresh'} );
+    'VariableNames', {'File','MAE','MSE','Leakage','BetterThanThresh'} );
 
-%% Loop over quadrature-bestanden
-for i = 1:nQ
-    fname = quad_files{i};
+%% Loop over all files and compute metrics
+for i = 1:nF
+    fname = all_files{i};
     fprintf('\n=== Processing %s ===\n', fname);
     
-    % Run POCS-reconstructie (gebruik je eigen functie)
-    recon = reconstruct_magnitude_image_POCS(fname);
-    
-    % Zorg dat recon dezelfde grootte heeft als ref_image
-    if ~isequal(size(recon), size(ref_image))
-        error('Grootte mismatch tussen referentie en reconstructie voor %s', fname);
+    % Decide on reconstruction method
+    if ismember(fname, quad_files)
+        % QP-RARE: use POCS
+        recon = reconstruct_magnitude_image_POCS(fname);
+    elseif strcmp(fname, rare_blib_file)
+        % Standard RARE with blip: use standard reconstruction
+        recon = reconstruct_magnitude_image_standard(fname, Nx);
+    else
+        error('Unknown file type!');
     end
     
-    % MAE & MSE
-    abs_diff       = abs(ref_image - recon);
-    mae_pocs       = mean(abs_diff(:));
-    mse_pocs       = mean((abs_diff(:)).^2);
+    % Ensure reconstruction and reference have the same size
+    if ~isequal(size(recon), size(ref_image))
+        error('Size mismatch between reference and reconstruction for %s', fname);
+    end
     
-    % Leakage (achtergrond)
-    thresh         = 0.01 * max(ref_image(:));
-    mask_fg        = ref_image >= thresh;
-    mask_bg        = ~mask_fg;
-    leakage_pocs   = mean(recon(mask_bg));
+    % Calculate metrics
+    abs_diff   = abs(ref_image - recon);
+    % Background leakage: Calculate mean signal outside the foreground mask
+    thresh     = 0.1 * max(ref_image(:));
+    mask_fg    = ref_image >= thresh;
+    mask_bg    = ~mask_fg;
+    leakage    = mean(recon(mask_bg));
     
-    % Bepaal of recon beter is dan een simpele threshold-reconstructie
-    better_flag    = mae_pocs < (mean(ref_image(:))*0.05);  % vb: 5% error
+    mae_fg = mean(abs_diff(mask_fg));
+    mse_fg = mean(abs_diff(mask_fg).^2);
+  
     
-    % Vul resultaat-tabel
-    results.File(i)            = fname;
-    results.MAE_POCS(i)        = mae_pocs;
-    results.MSE_POCS(i)        = mse_pocs;
-    results.Leakage_POCS(i)    = leakage_pocs;
-    results.BetterThanThresh(i)= better_flag;
+    % Fill results table
+    results.File(i)           = fname;
+    results.MAE(i)            = mae_fg;
+    results.MSE(i)            = mse_fg;
+    results.Leakage(i)        = leakage;
     
     % Console output
-    fprintf('  MAE (POCS): %.4e\n', mae_pocs);
-    fprintf('  MSE (POCS): %.4e\n', mse_pocs);
-    fprintf('  Leakage:    %.4e\n', leakage_pocs);
-    fprintf('  <5%% MAE?    %d\n', better_flag);
+    fprintf('  MAE:      %.4e\n', mae_fg);
+    fprintf('  MSE:      %.4e\n', mse_fg);
+    fprintf('  Leakage:  %.4e\n', leakage);
+
+    figure;
+    imshow(recon,[]);
+    hold on;
+    contour(mask_fg, [0.5 0.5], 'r'); % Shows mask outline
+    title('Reference image with foreground mask');
 end
 
-%% Toon samenvatting
-disp('=== Samenvatting POCS vergelijking ===');
+%% Show summary
+disp('=== Summary of reconstructions ===');
 disp(results);
+
+% Helper function: standard magnitude image reconstruction from .mat file
+function image = reconstruct_magnitude_image_standard(mat_file, Nx)
+    data = load(mat_file);
+    if isfield(data, 'M')
+        Mx = data.M(:,1);
+        My = data.M(:,2);
+        I  = complex(Mx, My);
+    else
+        error('Field M not found in %s', mat_file);
+    end
+    Ny = length(I)/Nx;
+    kspace = reshape(I, [Nx, Ny]);
+    image = abs(ifftshift(ifft2(ifftshift(kspace))));
+end
+
+
+
