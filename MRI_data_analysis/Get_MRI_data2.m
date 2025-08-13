@@ -33,4 +33,6 @@ imagesc(abs(flipdim(flipdim(I1',1),2)))
 I = sqrt(sum(abs(ims).^2, ndims(d))); % root sum of squares coil combination
 figure;
 imagesc(flipdim(flipdim(I',1),2))
-axis image off; colormap gray; colorbar;
+axis image off; 
+colormap gray;
+title('MRI RARE sequence ', 'FontSize', 14) % white title text, size 14
